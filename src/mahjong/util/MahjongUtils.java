@@ -35,4 +35,22 @@ public class MahjongUtils { //与えられた牌（Tile）が役牌（白・發�
         }
         return false; //字牌でなかった場合は、そもそも役牌の可能性がないので false
     }
+    
+    public static boolean isChunchan(Tile tile) { //「この牌は中張牌（2～8）か？」を判定。中張牌は刻子や槓子で得られる符が少ない（例：暗刻→4符）
+        return tile.getSuit().matches("man|pin|sou") && //萬子・筒子・索子のいずれかであり
+               tile.getNumber() >= 2 && tile.getNumber() <= 8; //数字が2〜8である
+    }
+
+    public static boolean isRoutou(Tile tile) { //「この牌は老頭牌（1または9）か？」を判定。老頭牌の刻子や槓子は符が多い（例：暗刻→8符）
+        return tile.getSuit().matches("man|pin|sou") && //萬・筒・索 のいずれか
+               (tile.getNumber() == 1 || tile.getNumber() == 9); //数字が 1 または 9
+    }
+
+    public static boolean isHonor(Tile tile) { //「この牌は字牌（白發中・風牌）か？」を判定。字牌の刻子や槓子も符が多い（暗刻→8符）
+        return tile.getSuit().equals("honor");
+    }
+
+    public static boolean isRoutouOrHonor(Tile tile) { //「この牌は老頭牌または字牌か？」を判定。刻子・槓子で +4符/+8符 に影響します。
+        return isRoutou(tile) || isHonor(tile); //1または9の数牌 または 字牌
+    }
 }

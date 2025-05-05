@@ -11,7 +11,7 @@ public class ScoreCalculator { //符を計算するクラス
 		//boolean isClosedRon: 門前ロンかどうか（今は未使用ですが将来拡張用）
         int fu = 20; //符の初期値。麻雀の符計算は基本的に 20 符から始まります。
 
-        // 暗刻・明刻などに応じて符を追加
+        /*// 暗刻・明刻などに応じて符を追加
         for (Meld meld : hand.getMelds()) { //手牌の中の面子（Meld）を1つずつ取り出して処理しています。
             if (meld.getType() == Meld.Type.TRIPLE) { //刻子（コーツ）＝同じ牌3枚の組み合わせ の場合
                 if (meld.isOpen()) fu += 2; //副露（open）していたら 2符
@@ -19,6 +19,26 @@ public class ScoreCalculator { //符を計算するクラス
             } else if (meld.getType() == Meld.Type.QUAD) { //槓子（カン）＝同じ牌4枚の組み合わせ の場合
                 if (meld.isOpen()) fu += 8; //副露なら 8符
                 else fu += 16; //暗槓なら 16符
+            }
+        }*/
+        
+        //「刻子（コーツ）」と「槓子（カンツ）」に加算される符を判断して加算する処理
+        for (Meld meld : hand.getMelds()) { //プレイヤーの手牌に含まれる4つの面子（メンツ）を1つずつ取り出します。
+        	//面子の構成牌が「老頭牌（1か9）」または「字牌（東南西北白發中）」かどうかを判定
+            boolean isRoutouOrHonor = MahjongUtils.isRoutouOrHonor(meld.getTile());
+
+            if (meld.getType() == Meld.Type.TRIPLE) { //面子が「刻子（3枚同じ牌）」かどうかの判定
+                if (meld.isOpen()) { //面子が鳴いている（副露）＝オープンなら true。暗刻（自分だけで完成）＝クローズなら false
+                    fu += isRoutouOrHonor ? 4 : 2;
+                } else {
+                    fu += isRoutouOrHonor ? 8 : 4;
+                }
+            } else if (meld.getType() == Meld.Type.QUAD) { //面子が「槓子（4枚同じ牌）」
+                if (meld.isOpen()) {
+                    fu += isRoutouOrHonor ? 16 : 8;
+                } else {
+                    fu += isRoutouOrHonor ? 32 : 16;
+                }
             }
         }
         
@@ -28,7 +48,7 @@ public class ScoreCalculator { //符を計算するクラス
             fu += 2;
         }*/
         
-     // 雀頭が役牌（白發中 or 自風 or 場風）なら +2符
+        // 雀頭が役牌（白發中 or 自風 or 場風）なら +2符
         if (MahjongUtils.isYakuhai(hand.getPair(), seatWind, roundWind)) {
             fu += 2;
         }
