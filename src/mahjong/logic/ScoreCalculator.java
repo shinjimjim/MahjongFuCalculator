@@ -5,7 +5,7 @@ import mahjong.model.Meld; //他のパッケージから Hand（手牌）と Mel
 import mahjong.util.MahjongUtils;
 
 public class ScoreCalculator { //符を計算するクラス
-	public int calculateFu(Hand hand, boolean isTsumo, boolean isClosedRon) { //符の計算結果（int）を返すメソッド
+	public int calculateFu(Hand hand, boolean isTsumo, boolean isClosedRon, int seatWind, int roundWind) { //符の計算結果（int）を返すメソッド
 		//Hand hand: プレイヤーの手牌（4面子+1雀頭）
 		//boolean isTsumo: ツモあがりかどうか（true ならツモ）
 		//boolean isClosedRon: 門前ロンかどうか（今は未使用ですが将来拡張用）
@@ -23,8 +23,13 @@ public class ScoreCalculator { //符を計算するクラス
         }
         
         // 雀頭が役牌なら +2符
-        if (MahjongUtils.isYakuHai(hand.getPair())) { //その牌が役牌（翻牌）かどうかをチェックするメソッド。
+        /*if (MahjongUtils.isYakuHai(hand.getPair())) { //その牌が役牌（翻牌）かどうかをチェックするメソッド。
         	//プレイヤーの手牌（Hand）から雀頭（対子）の牌を取得。honor牌（字牌）であり、番号が 1（白）, 2（發）, 3（中）に該当すれば true を返す。
+            fu += 2;
+        }*/
+        
+     // 雀頭が役牌（白發中 or 自風 or 場風）なら +2符
+        if (MahjongUtils.isYakuhai(hand.getPair(), seatWind, roundWind)) {
             fu += 2;
         }
 
