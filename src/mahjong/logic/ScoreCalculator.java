@@ -2,6 +2,7 @@ package mahjong.logic;
 
 import mahjong.model.Hand;
 import mahjong.model.Meld; //他のパッケージから Hand（手牌）と Meld（面子）のクラスをインポートしています。
+import mahjong.util.MahjongUtils;
 
 public class ScoreCalculator { //符を計算するクラス
 	public int calculateFu(Hand hand, boolean isTsumo, boolean isClosedRon) { //符の計算結果（int）を返すメソッド
@@ -19,6 +20,12 @@ public class ScoreCalculator { //符を計算するクラス
                 if (meld.isOpen()) fu += 8; //副露なら 8符
                 else fu += 16; //暗槓なら 16符
             }
+        }
+        
+        // 雀頭が役牌なら +2符
+        if (MahjongUtils.isYakuHai(hand.getPair())) { //その牌が役牌（翻牌）かどうかをチェックするメソッド。
+        	//プレイヤーの手牌（Hand）から雀頭（対子）の牌を取得。honor牌（字牌）であり、番号が 1（白）, 2（發）, 3（中）に該当すれば true を返す。
+            fu += 2;
         }
 
         // ツモあがり：2符
