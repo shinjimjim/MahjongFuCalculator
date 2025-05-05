@@ -1,0 +1,37 @@
+package mahjong.logic;
+
+import mahjong.model.Hand;
+import mahjong.model.Meld; //他のパッケージから Hand（手牌）と Meld（面子）のクラスをインポートしています。
+
+public class ScoreCalculator { //符を計算するクラス
+	public int calculateFu(Hand hand, boolean isTsumo, boolean isClosedRon) { //符の計算結果（int）を返すメソッド
+		//Hand hand: プレイヤーの手牌（4面子+1雀頭）
+		//boolean isTsumo: ツモあがりかどうか（true ならツモ）
+		//boolean isClosedRon: 門前ロンかどうか（今は未使用ですが将来拡張用）
+        int fu = 20; //符の初期値。麻雀の符計算は基本的に 20 符から始まります。
+
+        // 暗刻・明刻などに応じて符を追加
+        for (Meld meld : hand.getMelds()) { //手牌の中の面子（Meld）を1つずつ取り出して処理しています。
+            if (meld.getType() == Meld.Type.TRIPLE) { //刻子（コーツ）＝同じ牌3枚の組み合わせ の場合
+                if (meld.isOpen()) fu += 2; //副露（open）していたら 2符
+                else fu += 4; //暗刻（non-open）なら 4符
+            } else if (meld.getType() == Meld.Type.QUAD) { //槓子（カン）＝同じ牌4枚の組み合わせ の場合
+                if (meld.isOpen()) fu += 8; //副露なら 8符
+                else fu += 16; //暗槓なら 16符
+            }
+        }
+
+        // ツモあがり：2符
+        if (isTsumo) {
+            fu += 2;
+        }
+
+        // 最後に10の倍数に切り上げて戻します（例：34符 → 40符）
+        return roundUpToNearest10(fu);
+    }
+
+	//切り上げ処理：
+    private int roundUpToNearest10(int fu) {
+        return ((fu + 9) / 10) * 10; //9を足して10で割り、整数にしてから×10 で切り上げる。例：31 → 40, 40 → 40, 46 → 50
+    }
+}
