@@ -2,6 +2,7 @@ package mahjong.util;
 
 import java.util.Set; //Set は重複のない値の集合（コレクション）を表します。今回は「役牌の番号（1, 2, 3）」を管理するために使っています。
 
+import mahjong.model.Meld;
 import mahjong.model.Tile;
 
 public class MahjongUtils { //与えられた牌（Tile）が役牌（白・發・中）かどうかを判定する
@@ -52,5 +53,29 @@ public class MahjongUtils { //与えられた牌（Tile）が役牌（白・發�
 
     public static boolean isRoutouOrHonor(Tile tile) { //「この牌は老頭牌または字牌か？」を判定。刻子・槓子で +4符/+8符 に影響します。
         return isRoutou(tile) || isHonor(tile); //1または9の数牌 または 字牌
+    }
+    
+    public static boolean isTankiWait(Tile winningTile, Tile pair) { //単騎待ちかどうか
+    	//winningTile: あがった時の牌、pair: 雀頭（対子）として使っていた牌、equals() で両者が同じ牌なら「単騎待ち」と判定。
+        return winningTile.equals(pair);
+    }
+
+    public static boolean isKanchanWait(Tile winningTile, Meld meld) { //カンチャン待ちかどうか
+    	//meld.getTile()：順子の先頭牌（例：3-4-5 なら 3）を meld.getTile() で取得する設計になっています。
+    	//つまり、順子の形は 「基準牌 + 連続2つ」 で管理している前提です。
+        if (meld.getType() != Meld.Type.SEQUENCE) return false;
+        int base = meld.getTile().getNumber(); // 順子の先頭
+
+        return winningTile.getSuit().equals(meld.getTile().getSuit()) && //スート（man/pin/sou）も一致している必要あり
+               winningTile.getNumber() == base + 1; //真ん中は base+1 → その数字とあがり牌の番号が一致するかを判定
+    }
+
+    public static boolean isPenchanWait(Tile winningTile, Meld meld) { //ペンチャン待ちかどうか
+        if (meld.getType() != Meld.Type.SEQUENCE) return false;
+        int base = meld.getTile().getNumber();
+
+        return winningTile.getSuit().equals(meld.getTile().getSuit()) &&
+               ((base == 1 && winningTile.getNumber() == 3) || //baseが1 → 1-2 の順子 → 3待ちならペンチャン、1-2-3 の 3待ち
+                (base == 7 && winningTile.getNumber() == 7)); //baseが7 → 7-8 の順子 → 9待ちならペンチャン7-8-9 の 7待ち、特別な待ちとして+2符
     }
 }

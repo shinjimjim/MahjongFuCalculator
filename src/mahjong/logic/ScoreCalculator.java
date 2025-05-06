@@ -2,10 +2,12 @@ package mahjong.logic;
 
 import mahjong.model.Hand;
 import mahjong.model.Meld; //他のパッケージから Hand（手牌）と Meld（面子）のクラスをインポートしています。
+import mahjong.model.Tile;
 import mahjong.util.MahjongUtils;
 
 public class ScoreCalculator { //符を計算するクラス
-	public int calculateFu(Hand hand, boolean isTsumo, boolean isClosedRon, int seatWind, int roundWind) { //符の計算結果（int）を返すメソッド
+	//符の計算結果（int）を返すメソッド
+	public int calculateFu(Hand hand, boolean isTsumo, boolean isClosedRon, int seatWind, int roundWind, Tile winningTile) {
 		//Hand hand: プレイヤーの手牌（4面子+1雀頭）
 		//boolean isTsumo: ツモあがりかどうか（true ならツモ）
 		//boolean isClosedRon: 門前ロンかどうか（今は未使用ですが将来拡張用）
@@ -56,6 +58,24 @@ public class ScoreCalculator { //符を計算するクラス
         // ツモあがり：2符
         if (isTsumo) {
             fu += 2;
+        }
+        
+     // 待ちの形が「単騎・カンチャン・ペンチャン」のいずれかであるかを判定 +2符
+        boolean addedWaitFu = false; //「待ちに対する符をすでに加えたかどうか」を記録する変数
+        //今のところ addedWaitFu は後続の処理に使っていませんが、将来的なデバッグや重複防止に役立ちます。
+
+        if (MahjongUtils.isTankiWait(winningTile, hand.getPair())) { //isTankiWait(...) は、あがり牌 winningTile が雀頭と同じであるかを判定
+            fu += 2; //「単騎待ち（雀頭1枚で待っていた）」なら +2符 します。
+            addedWaitFu = true;
+        } else { //単騎待ちでなかった場合
+            for (Meld meld : hand.getMelds()) { //すべての順子（meld）を調べて、
+                if (MahjongUtils.isKanchanWait(winningTile, meld) || //カンチャン待ち（順子の真ん中で待つ）
+                    MahjongUtils.isPenchanWait(winningTile, meld)) { //ペンチャン待ち（端の3 or 7で待つ）のいずれかに該当するかをチェック
+                    fu += 2; //見つかったら +2符
+                    addedWaitFu = true;
+                    break; //最初の1つが見つかれば十分なので break します。
+                }
+            }
         }
 
         // 最後に10の倍数に切り上げて戻します（例：34符 → 40符）
