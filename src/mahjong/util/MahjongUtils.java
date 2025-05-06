@@ -75,7 +75,7 @@ public class MahjongUtils { //与えられた牌（Tile）が役牌（白・發�
         int base = meld.getTile().getNumber();
 
         return winningTile.getSuit().equals(meld.getTile().getSuit()) &&
-               ((base == 1 && winningTile.getNumber() == 3) || //baseが1 → 1-2 の順子 → 3待ちならペンチャン、1-2-3 の 3待ち
-                (base == 7 && winningTile.getNumber() == 7)); //baseが7 → 7-8 の順子 → 9待ちならペンチャン7-8-9 の 7待ち、特別な待ちとして+2符
+               ((base == 1 && winningTile.getNumber() == 3) || //baseが1 → 3待ちならペンチャン、1-2-3 の 3待ち
+                (base == 7 && winningTile.getNumber() == 7)); //baseが7 → 7待ちならペンチャン7-8-9 の 7待ち、特別な待ちとして+2符
     }
 }
