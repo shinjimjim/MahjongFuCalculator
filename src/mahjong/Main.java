@@ -2,6 +2,7 @@ package mahjong;
 
 import java.util.List; //Javaの標準ライブラリから List（リスト型）を使うための宣言
 
+import mahjong.logic.PointCalculator;
 import mahjong.logic.ScoreCalculator;
 import mahjong.model.Hand;
 import mahjong.model.Meld;
@@ -48,5 +49,12 @@ public class Main { //テスト実行用のMainクラス
         int fu = calc.calculateFu(hand, false, true, 4, 4, winTile);
         //結果の表示
         System.out.println("この手の符は: " + fu);
+        
+        int han = 3;
+        boolean isDealer = false;
+        boolean isTsumo = false;
+
+        int point = PointCalculator.calculatePoints(han, fu, isDealer, isTsumo);
+        System.out.println("得点: " + point + "点");
     }
 }
