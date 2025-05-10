@@ -4,9 +4,11 @@ import java.util.List; //Javaの標準ライブラリから List（リスト型�
 
 import mahjong.logic.PointCalculator;
 import mahjong.logic.ScoreCalculator;
+import mahjong.model.AgariPattern;
 import mahjong.model.Hand;
 import mahjong.model.Meld;
 import mahjong.model.Tile; //ScoreCalculator, Hand, Meld, Tile クラスを使うためのimport文です。
+import mahjong.util.MahjongUtils.AgariAnalyzer;
 
 public class Main { //テスト実行用のMainクラス
 	public static void main(String[] args) {
@@ -26,7 +28,7 @@ public class Main { //テスト実行用のMainクラス
 
         //手牌をまとめる。4つの面子（Meld）と1つの雀頭（Tile）を合わせて、1つの手牌 Hand を作成。
         /*Hand hand = new Hand(List.of(meld1, meld2, meld3, meld4), pair); //List.of(...) はJava 9以降で使える便利な書き方。*/
-        
+/*        
 		//アガリ牌の指定
         Tile winTile = new Tile("man", 4); // カンチャン待ち：3-5 に対する4
 
@@ -36,7 +38,7 @@ public class Main { //テスト実行用のMainクラス
             new Meld(Meld.Type.SEQUENCE, new Tile("pin", 6), true), //6-7-8 筒子、順子、明刻、通常の順子
             new Meld(Meld.Type.TRIPLE, new Tile("honor", 2), false) //發發發、暗刻	暗刻、字牌の暗刻 → +8符
         ), new Tile("honor", 2)); //發發、雀頭、三元牌（役牌）→ +2符
-        
+	
         //符の計算
         ScoreCalculator calc = new ScoreCalculator();
         
@@ -46,7 +48,8 @@ public class Main { //テスト実行用のMainクラス
         //第2引数 true は「ツモあがり」、第3引数 false は「門前ロンでない（副露あり）」を意味します。
         /*int fu = calc.calculateFu(hand, true, false, seatWind, roundWind);*/
         //seatWind→4、自風：東。roundWind→4、場風：東。winningTile→萬子の4、アガリ牌（カンチャン待ち）
-        int fu = calc.calculateFu(hand, false, true, 4, 4, winTile);
+        /*int fu = calc.calculateFu(hand, false, true, 4, 4, winTile);
+        
         //結果の表示
         System.out.println("この手の符は: " + fu);
         
@@ -56,5 +59,57 @@ public class Main { //テスト実行用のMainクラス
 
         int point = PointCalculator.calculatePoints(han, fu, isDealer, isTsumo);
         System.out.println("得点: " + point + "点");
+*/
+		// 仮の2パターンのあがり形を作る（ペンチャン待ち vs タンキ待ち）
+        Tile winningTile = new Tile("man", 3);
+
+        // パターン1: ペンチャン待ち（1-2-3の3待ち）
+        AgariPattern penchanPattern = new AgariPattern(
+            List.of(
+                new Meld(Meld.Type.SEQUENCE, new Tile("man", 1), true), //  1-2-3の順子。3萬が含まれていて、ペンチャン待ち（1-2待ちで3を引いた）。
+                new Meld(Meld.Type.SEQUENCE, new Tile("sou", 2), true), // 2-3-4
+                new Meld(Meld.Type.SEQUENCE, new Tile("pin", 6), true), // 6-7-8
+                new Meld(Meld.Type.TRIPLE, new Tile("honor", 2), false) // 発×3（暗刻）
+            ),
+            new Tile("honor", 2), // 雀頭：発
+            winningTile
+        );
+
+        // パターン2: タンキ待ち（雀頭の片割れで待つ）
+        AgariPattern tankiPattern = new AgariPattern(
+            List.of(
+                new Meld(Meld.Type.SEQUENCE, new Tile("man", 3), true), // 3-4-5
+                new Meld(Meld.Type.SEQUENCE, new Tile("sou", 2), true), // 2-3-4
+                new Meld(Meld.Type.SEQUENCE, new Tile("pin", 6), true), // 6-7-8
+                new Meld(Meld.Type.TRIPLE, new Tile("honor", 2), false) // 発×3（暗刻）
+            ),
+            new Tile("man", 3), // 雀頭：3m
+            winningTile
+        );
+
+        // 翻・状況設定（仮）
+        int han = 3;
+        boolean isTsumo = false;
+        boolean isDealer = false;
+        int seatWind = 1;
+        int roundWind = 1; //seatWind, roundWind: 自風と場風（1＝東）← 役牌判定に必要です。
+
+        // 点数を比較して最良のアガリ形を選ぶ
+        List<AgariPattern> patterns = List.of(penchanPattern, tankiPattern);
+        //AgariAnalyzer.getBestPattern(...) で最も高得点のあがり形を選びます。
+        AgariPattern best = AgariAnalyzer.getBestPattern(patterns, isTsumo, isDealer, han, seatWind, roundWind);
+
+        System.out.println("--------- 最終結果 ---------");
+        Hand bestHand = best.toHand();
+        //符を計算: 面子の種類、雀頭、待ち方、ロン/ツモ、自風・場風などから符を出す。
+        ScoreCalculator calc = new ScoreCalculator();
+        int fu = calc.calculateFu(bestHand, isTsumo, !isTsumo, seatWind, roundWind, best.getWinningTile());
+        //点数を計算: 翻と符から点数表に基づき、親/子、ツモ/ロンに応じて点を算出。
+        int point = PointCalculator.calculatePoints(han, fu, isDealer, isTsumo);
+        //最終的な最大点のあがり形と点数が出力されます。
+        System.out.println("選ばれた待ち牌: " + best.getWinningTile());
+        System.out.println("符: " + fu);
+        System.out.println("翻: " + han);
+        System.out.println("点数: " + point + "点");
     }
 }
