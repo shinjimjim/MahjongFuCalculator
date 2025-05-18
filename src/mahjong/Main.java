@@ -2,13 +2,13 @@ package mahjong;
 
 import java.util.List; //Javaの標準ライブラリから List（リスト型）を使うための宣言
 
+import mahjong.logic.AgariAnalyzer;
 import mahjong.logic.PointCalculator;
 import mahjong.logic.ScoreCalculator;
 import mahjong.model.AgariPattern;
 import mahjong.model.Hand;
 import mahjong.model.Meld;
 import mahjong.model.Tile; //ScoreCalculator, Hand, Meld, Tile クラスを使うためのimport文です。
-import mahjong.util.MahjongUtils.AgariAnalyzer;
 
 public class Main { //テスト実行用のMainクラス
 	public static void main(String[] args) {
@@ -96,9 +96,11 @@ public class Main { //テスト実行用のMainクラス
 
         // 点数を比較して最良のアガリ形を選ぶ
         List<AgariPattern> patterns = List.of(penchanPattern, tankiPattern);
+        
         //AgariAnalyzer.getBestPattern(...) で最も高得点のあがり形を選びます。
         AgariPattern best = AgariAnalyzer.getBestPattern(patterns, isTsumo, isDealer, han, seatWind, roundWind);
 
+        // 結果表示
         System.out.println("--------- 最終結果 ---------");
         Hand bestHand = best.toHand();
         //符を計算: 面子の種類、雀頭、待ち方、ロン/ツモ、自風・場風などから符を出す。

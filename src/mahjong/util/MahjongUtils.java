@@ -1,12 +1,7 @@
 package mahjong.util;
 
-import java.util.List;
 import java.util.Set; //Set は重複のない値の集合（コレクション）を表します。今回は「役牌の番号（1, 2, 3）」を管理するために使っています。
 
-import mahjong.logic.PointCalculator;
-import mahjong.logic.ScoreCalculator;
-import mahjong.model.AgariPattern;
-import mahjong.model.Hand;
 import mahjong.model.Meld;
 import mahjong.model.Tile;
 
@@ -82,33 +77,5 @@ public class MahjongUtils { //与えられた牌（Tile）が役牌（白・發�
         return winningTile.getSuit().equals(meld.getTile().getSuit()) &&
                ((base == 1 && winningTile.getNumber() == 3) || //baseが1 → 3待ちならペンチャン、1-2-3 の 3待ち
                 (base == 7 && winningTile.getNumber() == 7)); //baseが7 → 7待ちならペンチャン7-8-9 の 7待ち、特別な待ちとして+2符
-    }
-    
-    public class AgariAnalyzer { //getBestPattern メソッドは、複数のあがりパターン（AgariPattern）から最も得点が高いものを選ぶための処理
-        public static AgariPattern getBestPattern(List<AgariPattern> patterns, boolean isTsumo,
-                                                  boolean isDealer, int han, int seatWind, int roundWind) {
-        	//List<AgariPattern> patterns: 複数のあがり形（候補）、boolean isTsumo: ツモあがりか（true）かロンあがりか（false）
-        	//boolean isDealer: 親かどうか、int han: 翻数（リーチや役牌など）、int seatWind: 自風（東=1, 南=2 など）、int roundWind: 場風（東=1, 南=2 など）
-            ScoreCalculator scoreCalc = new ScoreCalculator(); //符計算用のクラス、calculateFu(...) メソッドを使うためにインスタンス化しています。
-            int maxPoint = 0; //現在の 最大点数 を記録する変数 maxPoint
-            AgariPattern best = null; //最も得点が高かったパターン（best）を格納する変数
-
-            for (AgariPattern pattern : patterns) { //すべてのあがり形を1つずつ確認します。
-                Hand hand = pattern.toHand(); //AgariPattern を Hand に変換します（符計算は Hand 単位）。
-                //符を計算する。第3引数の !isTsumo は「ロンならtrue、ツモならfalse」を意味します（ロンあがり判定）。自風と場風も渡して役牌の計算などに使用。
-                int fu = scoreCalc.calculateFu(hand, isTsumo, !isTsumo, seatWind, roundWind, pattern.getWinningTile());
-                //翻と符から点数を計算します。親かどうか、ツモかロンかも影響します。
-                int point = PointCalculator.calculatePoints(han, fu, isDealer, isTsumo);
-                //各パターンごとの計算結果（符・点数）を出力（デバッグ用）。
-                System.out.println("Pattern with fu " + fu + " → " + point + " 点");
-
-                if (point > maxPoint) { //このパターンがこれまでで最も高得点なら記録を更新。
-                    maxPoint = point;
-                    best = pattern;
-                }
-            }
-
-            return best; //最終的に一番高い点数だったあがり形（AgariPattern）を返します。
-        }
     }
 }
