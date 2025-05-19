@@ -19,4 +19,19 @@ public class Meld { //面子クラス　順子（シュンツ）、刻子（コ�
     public Type getType() { return type; } //getType() → 順子？刻子？槓子？
     public Tile getTile() { return tile; } //getTile() → 面子の基準となる牌は何？
     public boolean isOpen() { return isOpen; } //isOpen() → 鳴いてる？
+    
+    //補助メソッド（便利な判定）
+    public boolean isHonor() { //字牌かどうか（白發中、東南西北）
+        return tile.isHonor();
+    }
+
+    public boolean isTerminal() { //isTerminal()：老頭牌（1か9） or 特定の順子か
+    	//1 or 9 か？　または　順子のとき、7-8-9 の形（この場合 tile は 7）なら老頭牌扱いとする。
+        return tile.isTerminal() || (type == Type.SEQUENCE && tile.getNumber() == 7);
+    }
+
+    @Override
+    public String toString() { //このクラスのインスタンスを文字列で表示したときの形式。
+        return type + ":" + tile + (isOpen ? "(暗)" : "(明)");
+    }
 }
