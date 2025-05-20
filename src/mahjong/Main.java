@@ -2,13 +2,14 @@ package mahjong;
 
 import java.util.List; //Javaの標準ライブラリから List（リスト型）を使うための宣言
 
-import mahjong.logic.AgariAnalyzer;
 import mahjong.logic.PointCalculator;
 import mahjong.logic.ScoreCalculator;
+import mahjong.logic.YakuChecker;
 import mahjong.model.AgariPattern;
 import mahjong.model.Hand;
 import mahjong.model.Meld;
-import mahjong.model.Tile; //ScoreCalculator, Hand, Meld, Tile クラスを使うためのimport文です。
+import mahjong.model.Tile;
+import mahjong.model.Yaku;
 
 public class Main { //テスト実行用のMainクラス
 	public static void main(String[] args) {
@@ -60,6 +61,7 @@ public class Main { //テスト実行用のMainクラス
         int point = PointCalculator.calculatePoints(han, fu, isDealer, isTsumo);
         System.out.println("得点: " + point + "点");
 */
+
 		// 仮の2パターンのあがり形を作る（ペンチャン待ち vs タンキ待ち）
         Tile winningTile = new Tile("man", 3);
 
@@ -87,31 +89,67 @@ public class Main { //テスト実行用のMainクラス
             winningTile
         );
 
-        // 翻・状況設定（仮）
-        int han = 3;
-        boolean isTsumo = false;
-        boolean isDealer = false;
-        int seatWind = 1;
-        int roundWind = 1; //seatWind, roundWind: 自風と場風（1＝東）← 役牌判定に必要です。
-
         // 点数を比較して最良のアガリ形を選ぶ
         List<AgariPattern> patterns = List.of(penchanPattern, tankiPattern);
         
-        //AgariAnalyzer.getBestPattern(...) で最も高得点のあがり形を選びます。
-        AgariPattern best = AgariAnalyzer.getBestPattern(patterns, isTsumo, isDealer, han, seatWind, roundWind);
-
-        // 結果表示
-        System.out.println("--------- 最終結果 ---------");
-        Hand bestHand = best.toHand();
+        // 翻・状況設定（仮）
+        boolean isTsumo = false;
+        boolean isClosed = true;
+        boolean isRiichi = true;
+        boolean isIppatsu = false;
+        int seatWind = 1; // 東
+        int roundWind = 1; // 東
+        
         //符を計算: 面子の種類、雀頭、待ち方、ロン/ツモ、自風・場風などから符を出す。
         ScoreCalculator calc = new ScoreCalculator();
-        int fu = calc.calculateFu(bestHand, isTsumo, !isTsumo, seatWind, roundWind, best.getWinningTile());
-        //点数を計算: 翻と符から点数表に基づき、親/子、ツモ/ロンに応じて点を算出。
-        int point = PointCalculator.calculatePoints(han, fu, isDealer, isTsumo);
-        //最終的な最大点のあがり形と点数が出力されます。
-        System.out.println("選ばれた待ち牌: " + best.getWinningTile());
-        System.out.println("符: " + fu);
-        System.out.println("翻: " + han);
-        System.out.println("点数: " + point + "点");
+        
+        // 最良パターンの選出処理
+        AgariPattern bestPattern = null;
+        int bestScore = 0;
+        int bestFu = 0;
+        List<Yaku> bestYakus = null;
+
+        for (AgariPattern pattern : patterns) {
+            Hand hand = pattern.toHand();
+
+            List<Yaku> yakus = YakuChecker.checkYakus(
+                hand.getMelds(), hand.getPair(), isClosed, isTsumo, isRiichi, isIppatsu
+            );
+
+            boolean isClosedRon = !isTsumo && isClosed;
+
+            int fu = calc.calculateFu(
+                hand, isTsumo, isClosedRon, seatWind, roundWind, pattern.getWinningTile()
+            );
+
+            int score = PointCalculator.calculatePoints(yakus, fu, false, isTsumo);
+
+            System.out.println("[パターン評価]");
+            System.out.println("和了牌: " + pattern.getWinningTile());
+            System.out.println("符: " + fu);
+            System.out.println("役: ");
+            for (Yaku y : yakus) {
+                System.out.println(" - " + y.getName() + "（" + y.getHan() + "翻）");
+            }
+            System.out.println("点数: " + score + "点");
+            System.out.println("----------------------------");
+
+            if (score > bestScore) {
+                bestScore = score;
+                bestPattern = pattern;
+                bestYakus = yakus;
+                bestFu = fu;
+            }
+        }
+        
+        // 結果表示
+        System.out.println("=== 最も高得点のパターン ===");
+        System.out.println("和了牌: " + bestPattern.getWinningTile());
+        System.out.println("符: " + bestFu);
+        System.out.println("役:");
+        for (Yaku y : bestYakus) {
+            System.out.println(" - " + y.getName() + "（" + y.getHan() + "翻）");
+        }
+        System.out.println("最終点数: " + bestScore + "点");
     }
 }
